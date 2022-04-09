@@ -9,12 +9,16 @@ public class Board {
 	private boolean valid;
 	private boolean solved;
 
-	public Board(int[] nums, boolean print) {
+	public Board(int[] nums, boolean debugFlag) {
 		if (nums.length != 81) {
+			this.errorCode("Invalid puzzle size", debugFlag);
+			this.valid = false;
 			return;
 		}
 		for (int i = 0; i < 81; i ++) {
 			if ((nums[i] < 0) || (nums[i] > 9)) {
+				this.errorCode("Invalid input at index " + (i+1), debugFlag);
+				this.valid = false;
 				return;
 			}else if (nums[i] == 0) {
 				puz[(int) i/9][i%9] = 223092870;
@@ -38,8 +42,9 @@ public class Board {
 				puz[(int) i/9][i%9] = 23;
 			}
 		}
-		this.valid = this.validate(print);
-		this.solved = this.check(print);
+		this.valid = this.validate(debugFlag);
+		this.solved = false;
+		//this.solved = this.check(debugFlag);
 	}
 	
 	public void status() {
@@ -104,11 +109,11 @@ public class Board {
 		return ret;
 	}
 	
-	private boolean validate(boolean print) {
+	private boolean validate(boolean debugFlag) {
 		for (int r = 0; r < 9; r ++) {
 			for (int c = 0; c < 9; c ++) {
 				if (puz[r][c] == 1) {
-					this.errorCode("Invalid puzzle", print);
+					this.errorCode("Invalid puzzle", debugFlag);
 					return false;
 				}
 			}
@@ -122,7 +127,7 @@ public class Board {
 						if (!once) {
 							once = true;
 						}else {
-							this.errorCode("More than one instance of a number in row " + (r+1), print);
+							this.errorCode("More than one instance of a number in row " + (r+1), debugFlag);
 							return false;
 						}
 					}
@@ -137,7 +142,7 @@ public class Board {
 						if (!once) {
 							once = true;
 						}else {
-							this.errorCode("More than one instance of a number in column " + (c+1), print);
+							this.errorCode("More than one instance of a number in column " + (c+1), debugFlag);
 							return false;
 						}
 					}
@@ -154,7 +159,7 @@ public class Board {
 								if (!once) {
 									once = true;
 								}else {
-									this.errorCode("More than one instance of a number in box " + (r+2) + "," + (c+2), print);
+									this.errorCode("More than one instance of a number in box " + (r+2) + "," + (c+2), debugFlag);
 									return false;
 								}
 							}
@@ -166,53 +171,53 @@ public class Board {
 		return true;
 	}
 	
-	private void errorCode(String message, boolean print) {
-		if (print) {
+	private void errorCode(String message, boolean debugFlag) {
+		if (debugFlag) {
 			System.out.println(message);
 		}
 	}
 	
-	public void solve(boolean print) {
+	public void solve(boolean debugFlag) {
 		if (this.solved) {
-			this.errorCode("This puzzle is already solved", print);
+			this.errorCode("This puzzle is already solved", debugFlag);
 			return;
 		}
 		if (!valid) {
-			this.errorCode("Cannot solve an invalid puzzle", print);
+			this.errorCode("Cannot solve an invalid puzzle", debugFlag);
 			return;
 		}
-		this.simpleSolver(print);
+		this.simpleSolver(debugFlag);
 		boolean changes;
 		do {
 			changes = false;
-			if (this.rowSolver(print)) {
+			if (this.rowSolver(debugFlag)) {
 				changes = true;
 			}
-			if (this.columnSolver(print)) {
+			if (this.columnSolver(debugFlag)) {
 				changes = true;
 			}
-			if (this.columnSolver(print)) {
+			if (this.BoxSolver(debugFlag)) {
 				changes = true;
 			}
 			if (!changes) {
-				if (this.plainRowSolver(print)) {
+				if (this.plainRowSolver(debugFlag)) {
 					changes = true;
 				}
-				if (this.plainColumnSolver(print)) {
+				if (this.plainColumnSolver(debugFlag)) {
 					changes = true;
 				}
-				if (this.plainBoxSolver(print)) {
+				if (this.plainBoxSolver(debugFlag)) {
 					changes = true;
 				}
 			}
 			if (!changes) {
-				if (this.pointerRowSolver(print)) {
+				if (this.pointerRowSolver(debugFlag)) {
 					changes = true;
 				}
-				if (this.pointerColumnSolver(print)) {
+				if (this.pointerColumnSolver(debugFlag)) {
 					changes = true;
 				}
-				if (this.pointerBoxSolver(print)) {
+				if (this.pointerBoxSolver(debugFlag)) {
 					changes = true;
 				}
 			}
@@ -220,17 +225,17 @@ public class Board {
 				//Add hidden solvers later, time and understanding permitting
 			}
 		}while (changes);
-		this.check(print);
+		this.check(debugFlag);
 	}
 	
-	private void simpleSolver(boolean print) {
+	private void simpleSolver(boolean debugFlag) {
 		boolean changes = false;
 		do {
 			for (int r = 0; r < 9; r ++) {
 				for (int c = 0; c < 9; c ++) {
 					int[] factors = this.findFactors(this.puz[r][c]);
 					if (factors.length == 0) {
-						this.errorCode("Invalid puzzle", print);
+						this.errorCode("Invalid puzzle", debugFlag);
 					}else if (factors.length == 1){
 						if (this.divideRow(factors[0], r)) {
 							changes = true;
@@ -247,7 +252,7 @@ public class Board {
 		}while (changes);
 	}
 	
-	private boolean check(boolean print) {
+	private boolean check(boolean debugFlag) {
 		for (int p : primes) {
 			for (int r = 0; r < 9; r ++) {
 				for (int c = 0; c < 9; c ++) {
@@ -255,7 +260,7 @@ public class Board {
 						continue;
 					}
 					if (c == 8) {
-						this.errorCode("Currently unsolved", print);
+						this.errorCode("Currently unsolved", debugFlag);
 						return false;
 					}
 				}
@@ -266,7 +271,7 @@ public class Board {
 						continue;
 					}
 					if (r == 8) {
-						this.errorCode("Currently unsolved", print);
+						this.errorCode("Currently unsolved", debugFlag);
 						return false;
 					}
 				}
@@ -281,7 +286,7 @@ public class Board {
 								break;
 							}
 							if ((cc == (c+3)) && (rr == (r+3))) {
-								this.errorCode("Currently unsolved", print);
+								this.errorCode("Currently unsolved", debugFlag);
 								return false;
 							}
 						}
