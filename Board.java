@@ -43,8 +43,7 @@ public class Board {
 			}
 		}
 		this.valid = this.validate(debugFlag);
-		this.solved = false;
-		//this.solved = this.check(debugFlag);
+		this.solved = this.check(debugFlag);
 	}
 	
 	public void status() {
@@ -297,6 +296,7 @@ public class Board {
 				}
 			}
 		}
+		return true;
 	}
 	
 }
