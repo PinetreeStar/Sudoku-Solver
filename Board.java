@@ -166,7 +166,7 @@ public class Board {
 	//All functions beneath this comment can be moved to a Solve class. If they are moved, something will have to be done about/with errorCode()
 	
 	private int[] findFactors(int num) {
-		int[] ret = {0,0,0,0,0,0,0,0,0};
+		int[] ret = new int[9];
 		int ctr = 0;
 		for (int p : this.primes) {
 			if ((num % p) == 0) {
@@ -239,7 +239,7 @@ public class Board {
 			if (this.columnSolver(debugFlag)) {
 				changes = true;
 			}
-			if (this.BoxSolver(debugFlag)) {
+			if (this.boxSolver(debugFlag)) {
 				changes = true;
 			}
 			if (!changes) {
@@ -298,12 +298,14 @@ public class Board {
 			}
 		}while (changes);
 	}
-	
+
 	private boolean rowSolver(boolean debugFlag) {
 		boolean ret = false;
+		int cIndex;
+		
 		for (int p : this.primes) {
 			for (int r = 0; r < 9; r ++) {
-				int cIndex = -1;				
+				cIndex = -1;				
 				for (int c = 0; c < 9; c ++) {
 					if (Arrays.binarySearch(this.findFactors(this.puz[r][c]), p) < 0) {
 						if (cIndex == -1) {
@@ -325,9 +327,11 @@ public class Board {
 	
 	private boolean columnSolver(boolean debugFlag) {
 		boolean ret = false;
+		int rIndex;
+		
 		for (int p : this.primes) {
 			for (int c = 0; c < 9; c ++) {
-				int rIndex = -1;
+				rIndex = -1;
 				for (int r = 0; r < 9; r ++) {
 					if (Arrays.binarySearch(this.findFactors(this.puz[r][c]), p) < 0) {
 						if (rIndex == -1) {
@@ -349,11 +353,14 @@ public class Board {
 	
 	private boolean boxSolver(boolean debugFlag) {
 		boolean ret = false;
+		int rIndex;
+		int cIndex;
+		
 		for (int p : this.primes) {
 			for (int r = 0; r < 9; r += 3) {
 				for (int c = 0; c < 9; c += 3) {
-					int rIndex = -1;
-					int cIndex = -1;
+					rIndex = -1;
+					cIndex = -1;
 					for (int rr = r; rr < (r+3); rr ++) {
 						for (int cc = c; cc < (c+3); cc ++) {
 							if (Arrays.binarySearch(this.findFactors(this.puz[rr][cc]), p) < 0) {
@@ -371,6 +378,121 @@ public class Board {
 						ret = true;
 						this.puz[rIndex][cIndex] = p;
 						this.simpleSolver(debugFlag);
+					}
+				}
+			}
+		}
+		return ret;
+	}
+	
+	private boolean plainRowSolver(boolean debugFlag) {
+		boolean ret = false;
+		int[] factors;
+		int[] cIndices = new int[9];
+		int ctr;
+		int original;
+		
+		for (int r = 0; r < 9; r ++) {
+			for (int c = 0; c < 9; c ++) {
+				factors = this.findFactors(this.puz[r][c]);
+				if (factors.length > 1) {
+					ctr = 0;
+					for (int cc = 0; cc < 9; cc ++) {
+						if ((this.puz[r][cc] % this.puz[r][c]) == 0) {
+							cIndices[ctr++] = cc;
+						}
+					}
+					ctr --;
+					if (factors.length == ctr) {
+						ret = true;
+						original = this.puz[r][c];
+						for (int f : factors) {
+							this.divideRow(f, r);
+						}
+						for (int cc = 0; cc <= ctr; cc ++) {
+							this.puz[r][cc] = original;
+						}
+						this.simpleSolver(debugFlag);
+					}
+				}
+			}
+		}
+		return ret;
+	}
+	
+	private boolean plainColumnSolver(boolean debugFlag) {
+		boolean ret = false;
+		int[] factors;
+		int[] rIndices = new int[9];
+		int ctr;
+		int original;
+		
+		for (int c = 0; c < 9; c ++) {
+			for (int r = 0; r < 9; r ++) {
+				factors = this.findFactors(this.puz[r][c]);
+				if (factors.length > 1) {
+					ctr = 0;
+					for (int rr = 0; rr < 9; rr ++) {
+						if ((this.puz[rr][c] % this.puz[r][c]) == 0) {
+							rIndices[ctr++] = rr;
+						}
+					}
+					ctr --;
+					if (factors.length == ctr) {
+						ret = true;
+						original = this.puz[r][c];
+						for (int f : factors) {
+							this.divideColumn(f,  c);
+						}
+						for (int rr = 0; rr <= ctr; rr ++) {
+							this.puz[rr][c] = original;
+						}
+						this.simpleSolver(debugFlag);
+					}
+				}
+			}
+		}
+		return ret;
+	}
+	
+	private boolean plainBoxSolver(boolean debugFlag) {
+		boolean ret = false;
+		int[] factors;
+		int[] rIndices = new int[9];
+		int[] cIndices = new int[9];
+		int ctr;
+		int original;
+		
+		for (int r = 0; r < 9; r += 3) {
+			for (int c = 0; c < 9; c += 3) {
+				for (int rr = r; rr < (r+3); rr ++) {
+					for (int cc = c; cc < (c+3); cc ++) {
+						factors = this.findFactors(this.puz[rr][cc]);
+						if (factors.length > 1) {
+							ctr = 0;
+							for (int rrr = r; rrr < (r+3); rrr ++) {
+								for (int ccc = c; ccc < (c+3); ccc ++) {
+									if ((this.puz[rrr][ccc] % this.puz[rr][cc]) == 0) {
+										rIndices[ctr] = rrr;
+										cIndices[ctr++] = ccc;
+									}
+								}
+							}
+							ctr --;
+							if (factors.length == ctr) {
+								ret = true;
+								original = this.puz[rr][cc];
+								for (int f : factors) {
+									this.divideBox(f, r, c);
+								}
+								for (int rrr = r; rrr < (r+3); rrr ++) {
+									for (int ccc = c; ccc < (c+3); ccc ++) {
+										this.puz[rrr][ccc] = original;
+									}
+								}
+								this.simpleSolver(debugFlag);
+							}
+						}
 					}
 				}
 			}
