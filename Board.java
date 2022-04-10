@@ -180,7 +180,7 @@ public class Board {
 	private boolean divideRow(int p, int r) {
 		boolean ret = false;
 		for (int c = 0; c < 9; c ++) {
-			if (Arrays.binarySearch(findFactors(this.puz[r][c]), p) < 0) {
+			if (Arrays.binarySearch(findFactors(this.puz[r][c]), p) >= 0) {
 				this.puz[r][c] /= p;
 				ret = true;
 			}
@@ -191,7 +191,7 @@ public class Board {
 	private boolean divideColumn(int p, int c) {
 		boolean ret = false;
 		for (int r = 0; r < 9; r ++) {
-			if (Arrays.binarySearch(findFactors(this.puz[r][c]), p) < 0) {
+			if (Arrays.binarySearch(findFactors(this.puz[r][c]), p) >= 0) {
 				this.puz[r][c] /= p;
 				ret = true;
 			}
@@ -205,7 +205,7 @@ public class Board {
 		c = ((int) c / 3);
 		for (int rr = r; rr < (r+3); rr ++) {
 			for (int cc = c; cc < (c+3); cc ++) {
-				if (Arrays.binarySearch(findFactors(this.puz[rr][cc]), p) < 0) {
+				if (Arrays.binarySearch(findFactors(this.puz[rr][cc]), p) >= 0) {
 					this.puz[rr][cc] /= p;
 					ret = true;
 				}
@@ -268,11 +268,11 @@ public class Board {
 				//Add hidden solvers later, time and understanding permitting
 			}
 		}while (changes);
-		if (this.check(debugFlag)) {
-			this.printBoard(debugFlag);
+		if (this.check(false)) {
+			//this.printBoard(debugFlag);
 			//End of solve() with solved puzzle
 		}
-		//End of solve() with unsolved puzzle, should've stopped at this.check(debugFlag)
+		this.errorCode("This puzzle is currently unsolvable", debugFlag);
 	}
 	
 	private void simpleSolver(boolean debugFlag) {
@@ -307,7 +307,7 @@ public class Board {
 			for (int r = 0; r < 9; r ++) {
 				cIndex = -1;				
 				for (int c = 0; c < 9; c ++) {
-					if (Arrays.binarySearch(this.findFactors(this.puz[r][c]), p) < 0) {
+					if (Arrays.binarySearch(this.findFactors(this.puz[r][c]), p) >= 0) {
 						if (cIndex == -1) {
 							cIndex = c;
 						}else {
@@ -333,7 +333,7 @@ public class Board {
 			for (int c = 0; c < 9; c ++) {
 				rIndex = -1;
 				for (int r = 0; r < 9; r ++) {
-					if (Arrays.binarySearch(this.findFactors(this.puz[r][c]), p) < 0) {
+					if (Arrays.binarySearch(this.findFactors(this.puz[r][c]), p) >= 0) {
 						if (rIndex == -1) {
 							rIndex = r;
 						}else {
@@ -363,7 +363,7 @@ public class Board {
 					cIndex = -1;
 					for (int rr = r; rr < (r+3); rr ++) {
 						for (int cc = c; cc < (c+3); cc ++) {
-							if (Arrays.binarySearch(this.findFactors(this.puz[rr][cc]), p) < 0) {
+							if (Arrays.binarySearch(this.findFactors(this.puz[rr][cc]), p) >= 0) {
 								if (rIndex == -1) {
 									rIndex = rr;
 									cIndex = cc;
@@ -493,6 +493,138 @@ public class Board {
 								this.simpleSolver(debugFlag);
 							}
 						}
+					}
+				}
+			}
+		}
+		return ret;
+	}
+	
+	private boolean pointerRowSolver(boolean debugFlag) {
+		boolean ret = false;
+		int[] cIndices = new int[9];
+		int ctr;
+		int boxC;
+		boolean different;
+		
+		for (int p : this.primes) {
+			for (int r = 0; r < 9; r ++) {
+				ctr = 0;
+				for (int c = 0; c < 9; c ++) {
+					if (Arrays.binarySearch(this.findFactors(this.puz[r][c]), p) >= 0) {
+						cIndices[ctr++] = c;
+					}
+				}
+				if (ctr > 1) {
+					ret = true;
+					boxC = (int) (cIndices[0] / 3);
+					different = false;
+					for (int i = 0; i < ctr; i ++) {
+						if (((int) cIndices[i] / 3) != boxC) {
+							different = true;
+						}
+					}
+					if (!different) {
+						this.divideBox(p, r, cIndices[0]);
+					}
+					for (int i = 0; i < ctr; i ++) {
+						this.puz[r][cIndices[i]] *= p;
+					}
+					this.simpleSolver(debugFlag);
+				}
+			}
+		}
+		return ret;
+	}
+	
+	private boolean pointerColumnSolver(boolean debugFlag) {
+		boolean ret = false;
+		int[] rIndices = new int[9];
+		int ctr;
+		int boxR;
+		boolean different;
+		
+		for (int p : this.primes) {
+			for (int c = 0; c < 9; c ++) {
+				ctr = 0;
+				for (int r = 0; r < 9; r ++) {
+					if (Arrays.binarySearch(this.findFactors(this.puz[r][c]), p) >= 0) {
+						rIndices[ctr++] = r;
+					}
+				}
+				if (ctr > 1) {
+					ret = true;
+					boxR = (int) (rIndices[0] / 3);
+					different = false;
+					for (int i = 0; i < ctr; i ++) {
+						if (((int) rIndices[i] / 3) != boxR) {
+							different = true;
+						}
+					}
+					if (!different) {
+						this.divideBox(p, rIndices[0], c);
+					}
+					for (int i = 0; i < ctr; i ++) {
+						this.puz[rIndices[i]][c] *= p;
+					}
+					this.simpleSolver(debugFlag);
+				}
+			}
+		}
+		return ret;
+	}
+	
+	private boolean pointerBoxSolver(boolean debugFlag) {
+		boolean ret = false;
+		int[] rIndices = new int[9];
+		int[] cIndices = new int[9];
+		int ctr;
+		int row;
+		int col;
+		boolean different;
+		
+		for (int p : this.primes) {
+			for (int r = 0; r < 9; r += 3) {
+				for (int c = 0; c < 9; c += 3) {
+					ctr = 0;
+					for (int rr = r; rr < (r+3); rr ++) {
+						for (int cc = c; cc < (c+3); cc ++) {
+							if (Arrays.binarySearch(this.findFactors(this.puz[rr][cc]), p) >= 0) {
+								rIndices[ctr] = rr;
+								cIndices[ctr++] = cc;
+							}
+						}
+					}
+					if (ctr > 1) {
+						ret = true;
+						row = rIndices[0];
+						different = false;
+						for (int rI = 0; rI < ctr; rI ++) {
+							if (rIndices[rI] != row) {
+								different = true;
+							}
+						}
+						if (!different) {
+							this.divideRow(p, row);
+						}
+						for (int rI = 0; rI < ctr; rI ++) {
+							this.puz[row][cIndices[rI]] *= p;
+						}
+						
+						col = cIndices[0];
+						different = false;
+						for (int cI = 0; cI < ctr; cI ++) {
+							if (cIndices[cI] != col) {
+								different = true;
+							}
+						}
+						if (!different) {
+							this.divideColumn(p, col);
+						}
+						for (int cI = 0; cI < ctr; cI ++) {
+							this.puz[rIndices[cI]][col] *= p;
+						}
+						this.simpleSolver(debugFlag);
 					}
 				}
 			}
