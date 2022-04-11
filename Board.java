@@ -7,7 +7,7 @@ public class Board {
 	private int[] primes = {2,3,5,7,11,13,17,19,23};
 	protected int[][] puz = new int[9][9];
 	protected boolean valid = true;
-	protected boolean solved;
+	protected boolean solved = false;
 
 	public Board(int[] nums, boolean debugFlag) {
 		if (nums.length != 81) {
@@ -42,7 +42,9 @@ public class Board {
 				puz[(int) i/9][i%9] = 23;
 			}
 		}
-		this.status();
+		if (debugFlag) {
+			this.status();
+		}
 	}
 	
 	public String toString() {
@@ -75,6 +77,7 @@ public class Board {
 			this.solved = true;
 			System.out.println("This puzzle is solved");
 		}else {
+			System.out.println("This puzzle is currently unsolved");
 			this.solved = false;
 		}
 	}
@@ -144,7 +147,6 @@ public class Board {
 						break;
 					}
 					if (c == 8) {
-						System.out.println("Currently unsolved");
 						return false;
 					}
 				}
@@ -155,7 +157,6 @@ public class Board {
 						break;
 					}
 					if (r == 8) {
-						System.out.println("Currently unsolved");
 						return false;
 					}
 				}
@@ -170,7 +171,6 @@ public class Board {
 								break;
 							}
 							if ((cc == (c+3)) && (rr == (r+3))) {
-								System.out.println("Currently unsolved");
 								return false;
 							}
 						}

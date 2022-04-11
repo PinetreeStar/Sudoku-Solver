@@ -22,14 +22,14 @@ public class Solver {
 		return ret;
 	}
 	
-	public static void solve(Board puz, boolean debugFlag) {
+	public static boolean solve(Board puz, boolean debugFlag) {
 		if (puz.solved) {
 			errorCode("This puzzle is already solved", debugFlag);
-			return;
+			return false;
 		}
 		if (!puz.valid) {
 			errorCode("Cannot solve an invalid puzzle", debugFlag);
-			return;
+			return false;
 		}
 		simpleSolver(puz, debugFlag);
 		int[][] puzPrime;
@@ -54,9 +54,11 @@ public class Solver {
 		if (puz.check()) {
 			puz.solved = true;
 			errorCode(puz.toString(), debugFlag);
+			return true;
 		}else {
 			puz.solved = false;
 			errorCode("This puzzle is currently unsolvable", debugFlag);
+			return false;
 		}
 	}
 
@@ -356,9 +358,9 @@ public class Solver {
 					}
 					if (!different) {
 						divideBox(b, p, r, cIndices[0]);
-					}
-					for (int i = 0; i < ctr; i ++) {
-						b.puz[r][cIndices[i]] *= p;
+						for (int i = 0; i < ctr; i ++) {
+							b.puz[r][cIndices[i]] *= p;
+						}
 					}
 					simpleSolver(b, debugFlag);
 				}
@@ -390,9 +392,9 @@ public class Solver {
 					}
 					if (!different) {
 						divideBox(b, p, rIndices[0], c);
-					}
-					for (int i = 0; i < ctr; i ++) {
-						b.puz[rIndices[i]][c] *= p;
+						for (int i = 0; i < ctr; i ++) {
+							b.puz[rIndices[i]][c] *= p;
+						}
 					}
 					simpleSolver(b, debugFlag);
 				}
@@ -430,9 +432,9 @@ public class Solver {
 						}
 						if (!different) {
 							divideRow(b, p, row);
-						}
-						for (int rI = 0; rI < ctr; rI ++) {
-							b.puz[row][cIndices[rI]] *= p;
+							for (int cI = 0; cI < ctr; cI ++) {
+								b.puz[row][cIndices[cI]] *= p;
+							}
 						}
 						
 						col = cIndices[0];
@@ -444,9 +446,9 @@ public class Solver {
 						}
 						if (!different) {
 							divideColumn(b, p, col);
-						}
-						for (int cI = 0; cI < ctr; cI ++) {
-							b.puz[rIndices[cI]][col] *= p;
+							for (int rI = 0; rI < ctr; rI ++) {
+								b.puz[rIndices[rI]][col] *= p;
+							}
 						}
 						simpleSolver(b, debugFlag);
 					}

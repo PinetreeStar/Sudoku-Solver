@@ -6,7 +6,10 @@ public class Main {
 
 	public static void main(String[] args) {
 		
-		/*
+		int[] solved = new int[9];
+		int[] unsolved = new int[9];
+		int ctr = 8;
+		
 		int[] testing = {0,0,0,0,0,0,0,0,0,
 						0,0,0,0,0,0,0,0,0,
 						0,0,0,0,0,0,0,0,0,
@@ -21,20 +24,38 @@ public class Main {
 		Board sudoku;
 
 		while (true) {
+			manipulate = 0;
+			ctr = 8;
 			sudoku = new Board(testing, false);
-			sudoku.solve(false);
+			if (Solver.solve(sudoku, false)) {
+				solved[ctr] ++;
+				while (solved[ctr] == 1000000000) {
+					solved[ctr--] = 0;
+					solved[ctr] ++;
+				}
+			}else {
+				unsolved[ctr] ++;
+				while (unsolved[ctr] == 1000000000) {
+					unsolved[ctr--] = 0;
+					unsolved[ctr] ++;
+				}
+			}
 			testing[manipulate] ++;
-			if (testing[manipulate] == 10) {
+			while (testing[manipulate] == 10) {
 				if (manipulate == 80) {
-					break;
+					System.out.println("Finished without any errors!");
+					System.exit(0);
+				}else if ((manipulate % 10 == 0) && (manipulate != 0)) {
+					System.out.println(manipulate);
 				}
 				testing[manipulate++] = 0;
+				testing[manipulate] ++;
 			}
 		}
 		
-		System.out.println("Finished without any errors!");
-		*/
+
 		
+		/*
 		Board b1;
 		Board b2;
 		Board b3;
@@ -69,7 +90,7 @@ public class Main {
 		b3 = new Board(Sample3, true);
 		Solver.solve(b3, true);
 		b3.status();
-		
+		*/
 	}
 
 }
